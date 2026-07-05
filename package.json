@@ -1,0 +1,55 @@
+{
+  "name": "@yourorg/wisp",
+  "version": "0.1.0",
+  "description": "Drop-in, self-hosted analytics engine backed by Convex. Tracks sessions, interactions, and errors with a single machine/session identity model.",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./supabase": {
+      "types": "./dist/supabase.d.ts",
+      "import": "./dist/supabase.js",
+      "require": "./dist/supabase.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "peerDependencies": {
+    "@supabase/supabase-js": "^2.110.0"
+  },
+  "peerDependenciesMeta": {
+    "@supabase/supabase-js": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@supabase/supabase-js": "^2.110.0",
+    "jsdom": "^29.1.1",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.9"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "convex": "^1.42.1"
+  },
+  "allowScripts": {
+    "esbuild@0.27.0": true
+  }
+}
