@@ -1,6 +1,6 @@
 {
   "name": "@renderdragonorg/wisp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Drop-in, self-hosted analytics engine backed by Convex. Tracks sessions, interactions, and errors with a single machine/session identity model.",
   "type": "module",
   "main": "./dist/index.cjs",
