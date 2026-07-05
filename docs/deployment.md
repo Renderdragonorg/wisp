@@ -87,7 +87,7 @@ If you don't want to publish to npm, you can:
 ```json
 {
   "dependencies": {
-    "@codersoft/wisp": "github:your-org/wisp"
+    "@renderdragonorg/wisp": "github:renderdragonorg/wisp"
   }
 }
 ```

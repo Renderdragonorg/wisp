@@ -33,13 +33,13 @@ Run `npx convex dev` to deploy and generate types.
 ## 3. Install the SDK
 
 ```bash
-npm install @codersoft/wisp
+npm install @renderdragonorg/wisp
 ```
 
 Initialize it as early as possible in your app:
 
 ```typescript
-import { init } from "@codersoft/wisp";
+import { init } from "@renderdragonorg/wisp";
 
 init({
   convexUrl: "https://happy-animal-123.convex.cloud",
@@ -72,7 +72,7 @@ Set `VITE_CONVEX_URL` in `dashboard/.env.local` to your deployment URL.
 Send a manual event from the browser console:
 
 ```js
-import wisp from "@codersoft/wisp";
+import wisp from "@renderdragonorg/wisp";
 wisp.track("test_event", { message: "hello!" });
 ```
 

@@ -48,7 +48,7 @@ dailyStats table  ──►  Dashboard queries
 
 | Directory | Package |
 |-----------|---------|
-| `src/` | `@codersoft/wisp` — client SDK (npm package) |
+| `src/` | `@renderdragonorg/wisp` — client SDK (npm package) |
 | `convex/` | Convex backend functions (deployed alongside your app) |
 | `dashboard/` | Self-hosted analytics dashboard (Vite + React + recharts) |
 | `tests/` | Vitest test suite (81 unit + 27 integration) |

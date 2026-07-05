@@ -3,7 +3,7 @@
 ## Installation
 
 ```bash
-npm install @codersoft/wisp
+npm install @renderdragonorg/wisp
 ```
 
 Peer dependency (optional): `@supabase/supabase-js` ^2.110.0 — only needed if you use the Supabase auth binding.
@@ -11,7 +11,7 @@ Peer dependency (optional): `@supabase/supabase-js` ^2.110.0 — only needed if 
 ## Initialization
 
 ```typescript
-import { init } from "@codersoft/wisp";
+import { init } from "@renderdragonorg/wisp";
 
 const client = init({
   convexUrl: "https://happy-animal-123.convex.cloud",
@@ -25,7 +25,7 @@ Call `init()` once at the earliest possible point — your root layout, `main.ts
 After `init()`, you can use the `wisp` singleton anywhere without holding a reference to the client:
 
 ```typescript
-import wisp from "@codersoft/wisp";
+import wisp from "@renderdragonorg/wisp";
 
 wisp.track("checkout_completed", { total: 29.99 });
 wisp.trackError(new Error("Payment failed"), { paymentMethod: "card" });
@@ -184,7 +184,7 @@ On install, fires a `pageview` event immediately. Then patches `history.pushStat
 Replace the default Convex HTTP transport with your own endpoint:
 
 ```typescript
-import { init, type WispTransport } from "@codersoft/wisp";
+import { init, type WispTransport } from "@renderdragonorg/wisp";
 
 const myTransport: WispTransport = {
   async send(events, opts) {
@@ -202,7 +202,7 @@ init({ transport: myTransport });
 ## Custom plugin
 
 ```typescript
-import { init, type WispPlugin, type WispClientInternal } from "@codersoft/wisp";
+import { init, type WispPlugin, type WispClientInternal } from "@renderdragonorg/wisp";
 
 const scrollPlugin: WispPlugin = {
   name: "scroll_depth",
@@ -227,7 +227,7 @@ init({
 ## Supabase auth binding
 
 ```typescript
-import { bindSupabase } from "@codersoft/wisp/supabase";
+import { bindSupabase } from "@renderdragonorg/wisp/supabase";
 import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient("https://abc.supabase.co", "public-anon-key");

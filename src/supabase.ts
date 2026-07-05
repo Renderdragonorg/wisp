@@ -6,7 +6,7 @@ import { wisp } from "./index";
  * and Wisp are initialized. Handles the current session on call, plus every
  * future sign-in/sign-out.
  *
- * import { bindSupabase } from "@codersoft/wisp/supabase";
+ * import { bindSupabase } from "@renderdragonorg/wisp/supabase";
  * bindSupabase(supabase);
  */
 export function bindSupabase(supabase: SupabaseClient): () => void {
