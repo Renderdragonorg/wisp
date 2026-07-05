@@ -1095,7 +1095,7 @@ export function bindSupabase(supabase: SupabaseClient): () => void {
 ```json
 // package.json (excerpt)
 {
-  "name": "@yourorg/wisp",
+  "name": "@codersoft/wisp",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -1140,7 +1140,7 @@ Publish it to your own npm scope (`npm publish`), or skip publishing entirely an
 
 ```html
 <script type="module">
-  import wisp from "https://cdn.jsdelivr.net/npm/@yourorg/wisp/dist/index.js";
+  import wisp from "https://cdn.jsdelivr.net/npm/@codersoft/wisp/dist/index.js";
 
   wisp.init({ convexUrl: "https://happy-animal-123.convex.cloud" });
 </script>
@@ -1152,8 +1152,8 @@ Publish it to your own npm scope (`npm publish`), or skip publishing entirely an
 // app/analytics-provider.tsx
 "use client";
 import { useEffect } from "react";
-import wisp from "@yourorg/wisp";
-import { bindSupabase } from "@yourorg/wisp/supabase";
+import wisp from "@codersoft/wisp";
+import { bindSupabase } from "@codersoft/wisp/supabase";
 import { createClient } from "@/lib/supabase/client";
 
 export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
@@ -1188,7 +1188,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 // main.ts
 import { createApp } from "vue";
 import App from "./App.vue";
-import wisp from "@yourorg/wisp";
+import wisp from "@codersoft/wisp";
 
 wisp.init({ convexUrl: import.meta.env.VITE_CONVEX_URL });
 
@@ -1198,7 +1198,7 @@ createApp(App).mount("#app");
 ### 5.4 Manual event tracking anywhere
 
 ```typescript
-import wisp from "@yourorg/wisp";
+import wisp from "@codersoft/wisp";
 
 wisp.track("video_played", { videoId: "abc123", durationSec: 42 });
 
@@ -1217,7 +1217,7 @@ Every one of these is a config knob or a swappable piece — this is what makes 
 
 **Custom transport** (e.g. route through your own API instead of hitting Convex directly from the browser — useful if you want to add auth, rate-limiting, or IP-based geolocation server-side first):
 ```typescript
-import wisp, { type WispTransport } from "@yourorg/wisp";
+import wisp, { type WispTransport } from "@codersoft/wisp";
 
 const myTransport: WispTransport = {
   async send(events, { beacon }) {
@@ -1254,7 +1254,7 @@ wisp.init({ convexUrl: "...", samplingRate: 0.2 }); // track 20% of visitors
 
 **Custom plugin** — anything you want auto-instrumented that isn't covered by the built-ins:
 ```typescript
-import type { WispPlugin, WispClientInternal } from "@yourorg/wisp";
+import type { WispPlugin, WispClientInternal } from "@codersoft/wisp";
 
 function scrollDepthPlugin(): WispPlugin {
   let handler: (() => void) | null = null;
