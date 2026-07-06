@@ -2,12 +2,23 @@ import { httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
 import { internal } from "./_generated/api";
 
+const WISP_SECRET = process.env.WISP_SECRET;
+
+function isAuthorized(request: Request): boolean {
+  if (!WISP_SECRET) return true;
+  return request.headers.get("x-wisp-token") === WISP_SECRET;
+}
+
 const http = httpRouter();
 
 http.route({
   path: "/ingest",
   method: "POST",
   handler: httpAction(async (ctx, request) => {
+    if (!isAuthorized(request)) {
+      return new Response("Unauthorized", { status: 401 });
+    }
+
     const body = await request.json() as { events: unknown[] };
     const geo = await resolveGeo(request);
 
@@ -32,7 +43,7 @@ http.route({
       headers: {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type",
+        "Access-Control-Allow-Headers": "Content-Type, x-wisp-token",
         "Access-Control-Max-Age": "86400",
       },
     });
@@ -63,7 +74,7 @@ async function resolveGeo(request: Request): Promise<{
   if (ip) {
     try {
       const res = await fetch(
-        `http://ip-api.com/json/${ip}?fields=country,regionName,city`,
+        `https://ip-api.com/json/${ip}?fields=country,regionName,city`,
         { signal: AbortSignal.timeout(2000) }
       );
       if (res.ok) {

@@ -30,8 +30,9 @@ export interface WispClientInternal {
   trackError(error: Error | string, context?: Record<string, unknown>): void;
   getMachineId(): string;
   getSessionId(): string;
-  config: Required<Omit<WispConfig, "transport" | "plugins" | "redact">> & {
+  config: Required<Omit<WispConfig, "transport" | "plugins" | "redact" | "wispSecret">> & {
     transport?: WispTransport;
+    wispSecret?: string;
     redact?: (event: WispEvent) => WispEvent | null;
   };
 }
@@ -39,6 +40,8 @@ export interface WispClientInternal {
 export interface WispConfig {
   /** Convex deployment URL, e.g. https://happy-animal-123.convex.cloud. Ignored if a custom `transport` is provided. */
   convexUrl?: string;
+  /** Shared secret for authenticating with the Wisp ingest endpoint. Sent as x-wisp-token header. */
+  wispSecret?: string;
   /** Swap the default Convex HTTP transport for anything else (e.g. your own /api/analytics endpoint). */
   transport?: WispTransport;
   /** Inactivity window before a new session starts. Default 30 min. */

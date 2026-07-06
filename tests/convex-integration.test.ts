@@ -4,6 +4,7 @@ const convexUrl = "https://outstanding-snake-923.convex.cloud";
 const siteUrl = "https://outstanding-snake-923.convex.site";
 const mutationEndpoint = `${convexUrl}/api/mutation`;
 const queryEndpoint = `${convexUrl}/api/query`;
+const WISP_TOKEN = "yamurapookie";
 
 const machineId = crypto.randomUUID();
 
@@ -59,7 +60,7 @@ describe("Convex backend integration", () => {
   it("HTTP Action /ingest accepts events and returns 204", async () => {
     const res = await fetch(`${siteUrl}/ingest`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "x-wisp-token": WISP_TOKEN },
       body: JSON.stringify({ events: [makeEvent({ name: "ingest_test" })] }),
     });
     expect(res.status).toBe(204);
@@ -91,7 +92,7 @@ describe("Convex backend integration", () => {
 
     const res = await fetch(`${siteUrl}/ingest`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "x-wisp-token": WISP_TOKEN },
       body: JSON.stringify({ events }),
     });
     expect(res.status).toBe(204);

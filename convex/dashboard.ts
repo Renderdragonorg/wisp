@@ -261,7 +261,9 @@ export const getMachineStats = query({
       .slice(0, 5)
       .map(([url, count]) => ({ url, count }));
 
-    const lastSession = sessions.reduce((a, b) => (a.lastActivityAt > b.lastActivityAt ? a : b), sessions[0]);
+    const lastSession = sessions.length > 0
+      ? sessions.reduce((a, b) => (a.lastActivityAt > b.lastActivityAt ? a : b))
+      : null;
 
     return {
       machine: {
@@ -289,14 +291,16 @@ export const getMachineStats = query({
       },
       topErrors,
       topPages,
-      lastSession: {
-        id: lastSession.sessionId,
-        startedAt: lastSession.startedAt,
-        entryUrl: lastSession.entryUrl ?? null,
-        exitUrl: lastSession.exitUrl ?? null,
-        durationMs: lastSession.durationMs,
-        errorCount: lastSession.errorCount,
-      },
+      lastSession: lastSession
+        ? {
+            id: lastSession.sessionId,
+            startedAt: lastSession.startedAt,
+            entryUrl: lastSession.entryUrl ?? null,
+            exitUrl: lastSession.exitUrl ?? null,
+            durationMs: lastSession.durationMs,
+            errorCount: lastSession.errorCount,
+          }
+        : null,
     };
   },
 });
@@ -417,17 +421,17 @@ export const searchMachines = query({
   args: { prefix: v.string() },
   handler: async (ctx, { prefix }) => {
     if (!prefix || prefix.trim().length === 0) return [];
-    const all = await ctx.db.query("machines").collect();
-    return all
-      .filter((m) => m.machineId.toLowerCase().includes(prefix.toLowerCase()))
-      .map((m) => ({
-        id: m.machineId,
-        label: `${m.machineId.slice(0, 12)}…`,
-        country: m.country ?? null,
-        platform: m.platform ?? null,
-        lastSeenAt: m.lastSeenAt,
-      }))
-      .slice(0, 20);
+    const results = await ctx.db
+      .query("machines")
+      .withSearchIndex("search_machineId", (q) => q.search("machineId", prefix))
+      .take(20);
+    return results.map((m) => ({
+      id: m.machineId,
+      label: `${m.machineId.slice(0, 12)}…`,
+      country: m.country ?? null,
+      platform: m.platform ?? null,
+      lastSeenAt: m.lastSeenAt,
+    }));
   },
 });
 

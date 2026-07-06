@@ -10,18 +10,23 @@ import type { WispEvent, WispTransport } from "../types";
 export class ConvexTransport implements WispTransport {
   private endpoint: string;
   private debug: boolean;
+  private wispSecret?: string;
 
-  constructor(convexUrl: string, debug = false) {
+  constructor(convexUrl: string, debug = false, wispSecret?: string) {
     // HTTP Actions live on .convex.site, not .convex.cloud
     const siteUrl = convexUrl.replace(".convex.cloud", ".convex.site");
     this.endpoint = `${siteUrl.replace(/\/$/, "")}/ingest`;
     this.debug = debug;
+    this.wispSecret = wispSecret;
   }
 
   async send(events: WispEvent[], opts: { beacon?: boolean }): Promise<void> {
     if (events.length === 0) return;
 
     const body = JSON.stringify({ events });
+
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (this.wispSecret) headers["x-wisp-token"] = this.wispSecret;
 
     try {
       if (opts.beacon && typeof navigator !== "undefined" && navigator.sendBeacon) {
@@ -33,7 +38,7 @@ export class ConvexTransport implements WispTransport {
 
       await fetch(this.endpoint, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body,
         keepalive: opts.beacon,
       });

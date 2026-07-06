@@ -36,6 +36,7 @@ class WispClient implements WispClientInternal {
 
     this.config = {
       convexUrl: cfg.convexUrl ?? "",
+      wispSecret: cfg.wispSecret,
       sessionTimeoutMs: cfg.sessionTimeoutMs ?? DEFAULTS.sessionTimeoutMs,
       batchIntervalMs: cfg.batchIntervalMs ?? DEFAULTS.batchIntervalMs,
       batchMaxSize: cfg.batchMaxSize ?? DEFAULTS.batchMaxSize,
@@ -52,7 +53,7 @@ class WispClient implements WispClientInternal {
     this.sampledIn = this.resolveSampling(this.config.samplingRate);
     this.session = new SessionManager(this.config.sessionTimeoutMs);
 
-    const transport = this.config.transport ?? new ConvexTransport(this.config.convexUrl, this.config.debug);
+    const transport = this.config.transport ?? new ConvexTransport(this.config.convexUrl, this.config.debug, this.config.wispSecret);
     this.queue = new EventQueue({
       intervalMs: this.config.batchIntervalMs,
       maxSize: this.config.batchMaxSize,

@@ -17,8 +17,9 @@ export const closeStaleSessions = internalMutation({
 
     const stale = await ctx.db
       .query("sessions")
-      .withIndex("by_open", (q) => q.eq("endedAt", undefined))
-      .filter((q) => q.lt(q.field("lastActivityAt"), cutoff))
+      .withIndex("by_open_lastActivityAt", (q) =>
+        q.eq("endedAt", undefined).lt("lastActivityAt", cutoff)
+      )
       .collect();
 
     for (const session of stale) {
@@ -46,9 +47,7 @@ export const computeDailyStats = internalMutation({
 
     const sessionsToday = await ctx.db
       .query("sessions")
-      .filter((q) =>
-        q.and(q.gte(q.field("startedAt"), dayStart), q.lt(q.field("startedAt"), dayEnd))
-      )
+      .withIndex("by_startedAt", (q) => q.gte("startedAt", dayStart).lt("startedAt", dayEnd))
       .collect();
 
     const newMachines = await ctx.db
