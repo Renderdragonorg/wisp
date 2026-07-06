@@ -58,6 +58,10 @@ async function upsertMachine(
   await ctx.db.patch(existing._id, {
     lastSeenAt: args.timestamp,
     userId: args.userId ?? existing.userId,
+    userAgent: args.meta?.userAgent as string | undefined ?? existing.userAgent,
+    platform: args.meta?.platform as string | undefined ?? existing.platform,
+    referrer: args.meta?.referrer as string | undefined ?? existing.referrer,
+    screen: args.meta?.screen as string | undefined ?? existing.screen,
   });
   return { isNewMachine: false };
 }
