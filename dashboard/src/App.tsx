@@ -176,6 +176,8 @@ export default function DashboardPage() {
                     <div className="font-mono text-foreground">{s.id.slice(0, 16)}…</div>
                     <div className="text-muted-foreground mt-0.5">
                       {s.platform ?? "—"} · {s.country ?? "—"} · {s.lastSeenAt ? new Date(s.lastSeenAt).toLocaleDateString() : "—"}
+                      {s.userEmail && ` · ${s.userEmail}`}
+                      {s.userName && ` · ${s.userName}`}
                     </div>
                   </button>
                 ))}

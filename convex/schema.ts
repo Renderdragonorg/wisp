@@ -5,6 +5,9 @@ export default defineSchema({
   machines: defineTable({
     machineId: v.string(),
     userId: v.optional(v.string()),
+    userEmail: v.optional(v.string()),
+    userName: v.optional(v.string()),
+    authProvider: v.optional(v.string()),
     firstSeenAt: v.number(),
     lastSeenAt: v.number(),
     firstSeenDate: v.string(), // "YYYY-MM-DD", set once — drives new-vs-returning

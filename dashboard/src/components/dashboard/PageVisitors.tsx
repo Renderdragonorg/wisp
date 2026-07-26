@@ -58,6 +58,7 @@ export function PageVisitors({
               <TableRow className="border-border hover:bg-transparent">
                 <TableHead className="text-xs">Machine</TableHead>
                 <TableHead className="text-xs">Visits</TableHead>
+                <TableHead className="text-xs">User</TableHead>
                 <TableHead className="text-xs">Country</TableHead>
                 <TableHead className="text-xs">Platform</TableHead>
                 <TableHead className="text-xs">First visit</TableHead>
@@ -75,6 +76,9 @@ export function PageVisitors({
                     {v.machineId.slice(0, 16)}…
                   </TableCell>
                   <TableCell className="text-xs text-foreground">{v.visitCount}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground max-w-[160px] truncate">
+                    {v.userEmail ?? v.userName ?? v.authProvider ?? "—"}
+                  </TableCell>
                   <TableCell className="text-xs text-muted-foreground">{v.country ?? "—"}</TableCell>
                   <TableCell className="text-xs text-muted-foreground">{v.platform ?? "—"}</TableCell>
                   <TableCell className="text-xs text-muted-foreground">

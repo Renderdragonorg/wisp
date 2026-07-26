@@ -101,6 +101,22 @@ export function MachineView({
           </div>
         </div>
 
+        {/* User info */}
+        {(machine.userEmail || machine.userName || machine.authProvider || machine.userId) && (
+          <>
+            <Separator className="border-border" />
+            <div>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest mb-3">User</p>
+              <div className="grid grid-cols-2 gap-3">
+                <StatItem label="Email" value={machine.userEmail ?? "—"} />
+                <StatItem label="Name" value={machine.userName ?? "—"} />
+                <StatItem label="Auth provider" value={machine.authProvider ?? "—"} />
+                <StatItem label="User ID" value={machine.userId ?? "—"} />
+              </div>
+            </div>
+          </>
+        )}
+
         <Separator className="border-border" />
 
         {/* Device & location */}

@@ -1,5 +1,11 @@
 export type EventType = "pageview" | "interaction" | "error" | "custom";
 
+export interface UserInfo {
+  email?: string;
+  name?: string;
+  provider?: string;
+}
+
 export interface WispEvent {
   type: EventType;
   name: string;

@@ -92,6 +92,18 @@ describe("wisp client", () => {
     expect(() => client.identify("user-99")).not.toThrow();
   });
 
+  it("identify() accepts userInfo", async () => {
+    const { init } = await import("../src/index");
+    const client = init({ convexUrl: "https://test.convex.cloud" });
+    expect(() =>
+      client.identify("user-42", {
+        email: "alice@example.com",
+        name: "Alice",
+        provider: "google",
+      })
+    ).not.toThrow();
+  });
+
   it("flush() resolves without error", async () => {
     const { init } = await import("../src/index");
     const client = init({ convexUrl: "https://test.convex.cloud" });

@@ -25,6 +25,7 @@ async function upsertMachine(
   args: {
     machineId: string;
     userId?: string;
+    userInfo?: { email?: string; name?: string; provider?: string };
     timestamp: number;
     meta?: Record<string, unknown>;
     geo?: { ip?: string; country?: string; region?: string; city?: string };
@@ -39,6 +40,9 @@ async function upsertMachine(
     await ctx.db.insert("machines", {
       machineId: args.machineId,
       userId: args.userId,
+      userEmail: args.userInfo?.email,
+      userName: args.userInfo?.name,
+      authProvider: args.userInfo?.provider,
       firstSeenAt: args.timestamp,
       lastSeenAt: args.timestamp,
       firstSeenDate: dateKey(args.timestamp),
@@ -58,6 +62,9 @@ async function upsertMachine(
   await ctx.db.patch(existing._id, {
     lastSeenAt: args.timestamp,
     userId: args.userId ?? existing.userId,
+    userEmail: args.userInfo?.email ?? existing.userEmail,
+    userName: args.userInfo?.name ?? existing.userName,
+    authProvider: args.userInfo?.provider ?? existing.authProvider,
     userAgent: args.meta?.userAgent as string | undefined ?? existing.userAgent,
     platform: args.meta?.platform as string | undefined ?? existing.platform,
     referrer: args.meta?.referrer as string | undefined ?? existing.referrer,
@@ -130,10 +137,22 @@ export const recordBatch = mutation({
 
     for (const event of sorted) {
       const isBookkeeping = event.name === "session_start";
+      const isIdentify = event.name === "session_identify";
+
+      let userInfo: { email?: string; name?: string; provider?: string } | undefined;
+      if (isIdentify && event.payload) {
+        const p = event.payload as Record<string, unknown>;
+        userInfo = {
+          email: p.email as string | undefined,
+          name: p.name as string | undefined,
+          provider: p.provider as string | undefined,
+        };
+      }
 
       await upsertMachine(ctx, {
         machineId: event.machineId,
         userId: event.userId,
+        userInfo,
         timestamp: event.timestamp,
         meta: isBookkeeping ? event.payload : undefined,
       });
@@ -214,10 +233,22 @@ export const recordBatchWithGeo = internalMutation({
 
     for (const event of sorted) {
       const isBookkeeping = event.name === "session_start";
+      const isIdentify = event.name === "session_identify";
+
+      let userInfo: { email?: string; name?: string; provider?: string } | undefined;
+      if (isIdentify && event.payload) {
+        const p = event.payload as Record<string, unknown>;
+        userInfo = {
+          email: p.email as string | undefined,
+          name: p.name as string | undefined,
+          provider: p.provider as string | undefined,
+        };
+      }
 
       await upsertMachine(ctx, {
         machineId: event.machineId,
         userId: event.userId,
+        userInfo,
         timestamp: event.timestamp,
         meta: isBookkeeping ? event.payload : undefined,
         geo,

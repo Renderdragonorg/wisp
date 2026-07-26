@@ -5,9 +5,9 @@ import { ConvexTransport } from "./core/transport";
 import { errorPlugin } from "./plugins/errors";
 import { clickPlugin } from "./plugins/clicks";
 import { pageviewPlugin } from "./plugins/pageviews";
-import type { WispConfig, WispEvent, WispPlugin, WispClientInternal } from "./types";
+import type { WispConfig, WispEvent, WispPlugin, WispClientInternal, UserInfo } from "./types";
 
-export type { WispConfig, WispEvent, WispPlugin, WispTransport, EventType } from "./types";
+export type { WispConfig, WispEvent, WispPlugin, WispTransport, EventType, UserInfo } from "./types";
 
 const DEFAULTS = {
   sessionTimeoutMs: 30 * 60 * 1000,
@@ -26,6 +26,7 @@ class WispClient implements WispClientInternal {
   private queue: EventQueue;
   private plugins: WispPlugin[] = [];
   private userId?: string;
+  private userInfo?: UserInfo;
   private sampledIn: boolean;
   public config: WispClientInternal["config"];
 
@@ -101,13 +102,18 @@ class WispClient implements WispClientInternal {
   }
 
   /** Call after Supabase (or any auth provider) resolves a logged-in user. Attaches userId to all future events for this machine/session. */
-  identify(userId: string): void {
+  identify(userId: string, userInfo?: UserInfo): void {
     this.userId = userId;
+    this.userInfo = userInfo;
+    if (userInfo) {
+      this.track("session_identify", { ...userInfo, userId });
+    }
   }
 
   /** Clear identity on logout. Machine ID persists — only the userId link is dropped. */
   reset(): void {
     this.userId = undefined;
+    this.userInfo = undefined;
   }
 
   track(name: string, payload?: Record<string, unknown>): void {
@@ -201,7 +207,7 @@ function requireInstance(): WispClient {
 
 export const wisp = {
   init,
-  identify: (userId: string) => requireInstance().identify(userId),
+  identify: (userId: string, userInfo?: UserInfo) => requireInstance().identify(userId, userInfo),
   reset: () => requireInstance().reset(),
   track: (name: string, payload?: Record<string, unknown>) => requireInstance().track(name, payload),
   trackError: (error: Error | string, context?: Record<string, unknown>) =>

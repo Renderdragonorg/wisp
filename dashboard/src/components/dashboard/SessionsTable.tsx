@@ -130,6 +130,7 @@ export function SessionsTable({ onSelectMachine }: { onSelectMachine?: (id: stri
             <TableRow className="border-border hover:bg-transparent">
               <TableHead className="text-xs">Started</TableHead>
               <TableHead className="text-xs">Machine</TableHead>
+              <TableHead className="text-xs">User</TableHead>
               <TableHead className="text-xs">Entry URL</TableHead>
               <TableHead className="text-xs">Duration</TableHead>
               <TableHead className="text-xs">Events</TableHead>
@@ -154,6 +155,9 @@ export function SessionsTable({ onSelectMachine }: { onSelectMachine?: (id: stri
                   ) : (
                     <span className="text-foreground">{s.machineId.slice(0, 8)}…</span>
                   )}
+                </TableCell>
+                <TableCell className="text-xs text-muted-foreground max-w-[120px] truncate">
+                  {s.userId ? `${s.userId.slice(0, 8)}…` : "—"}
                 </TableCell>
                 <TableCell className="text-xs text-muted-foreground max-w-[180px] truncate">
                   {s.entryUrl}

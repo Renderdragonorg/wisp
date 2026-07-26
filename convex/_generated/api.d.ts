@@ -12,6 +12,7 @@ import type * as crons from "../crons.js";
 import type * as dashboard from "../dashboard.js";
 import type * as events from "../events.js";
 import type * as http from "../http.js";
+import type * as reset from "../reset.js";
 import type * as stats from "../stats.js";
 
 import type {
@@ -25,6 +26,7 @@ declare const fullApi: ApiFromModules<{
   dashboard: typeof dashboard;
   events: typeof events;
   http: typeof http;
+  reset: typeof reset;
   stats: typeof stats;
 }>;
 

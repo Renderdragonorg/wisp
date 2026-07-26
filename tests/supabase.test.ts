@@ -9,10 +9,13 @@ interface MockSupabaseClient {
   };
 }
 
-function createMockSupabase(): MockSupabaseClient {
+function createMockSupabase(session?: Record<string, unknown>): MockSupabaseClient {
   return {
     auth: {
-      getSession: vi.fn().mockResolvedValue({ data: { session: null }, error: null }),
+      getSession: vi.fn().mockResolvedValue({
+        data: { session: session ?? null },
+        error: null,
+      }),
       onAuthStateChange: vi.fn().mockReturnValue({
         data: { subscription: { unsubscribe: vi.fn() } },
       }),
@@ -50,5 +53,21 @@ describe("bindSupabase", () => {
     unsubscribe();
     const { subscription } = supabase.auth.onAuthStateChange.mock.results[0].value.data;
     expect(subscription.unsubscribe).toHaveBeenCalled();
+  });
+
+  it("extracts user info from existing session", async () => {
+    const session = {
+      user: {
+        id: "user-abc-123",
+        email: "alice@example.com",
+        user_metadata: { full_name: "Alice Smith" },
+        app_metadata: { provider: "github" },
+      },
+    };
+    const supabase = createMockSupabase(session);
+    bindSupabase(supabase as any);
+    await vi.waitFor(() => {
+      expect(supabase.auth.getSession).toHaveBeenCalled();
+    });
   });
 });

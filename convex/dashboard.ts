@@ -269,6 +269,9 @@ export const getMachineStats = query({
       machine: {
         id: machine.machineId,
         userId: machine.userId ?? null,
+        userEmail: machine.userEmail ?? null,
+        userName: machine.userName ?? null,
+        authProvider: machine.authProvider ?? null,
         firstSeenAt: machine.firstSeenAt,
         lastSeenAt: machine.lastSeenAt,
         visitCount: machine.visitCount,
@@ -379,6 +382,9 @@ export const getPageVisitors = query({
           country: machine?.country ?? null,
           platform: machine?.platform ?? null,
           userAgent: machine?.userAgent ?? null,
+          userEmail: machine?.userEmail ?? null,
+          userName: machine?.userName ?? null,
+          authProvider: machine?.authProvider ?? null,
         };
       })
     );
@@ -431,6 +437,9 @@ export const searchMachines = query({
       country: m.country ?? null,
       platform: m.platform ?? null,
       lastSeenAt: m.lastSeenAt,
+      userEmail: m.userEmail ?? null,
+      userName: m.userName ?? null,
+      authProvider: m.authProvider ?? null,
     }));
   },
 });
