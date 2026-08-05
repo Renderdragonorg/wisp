@@ -3,7 +3,6 @@ import { internal } from "./_generated/api";
 import { v } from "convex/values";
 import { paginationOptsValidator } from "convex/server";
 
-const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
 const dateKey = (ms: number) => new Date(ms).toISOString().slice(0, 10);
 
 export const listSessions = query({
@@ -26,13 +25,25 @@ export const listSessions = query({
         .withSearchIndex("search_entryUrl", (q) => q.search("entryUrl", args.search!))
         .paginate(args.paginationOpts);
 
+      const filteredPage = results.page.filter(
+        (s) =>
+          (!args.onlyReturning || s.isReturning) &&
+          (!args.onlyWithErrors || s.errorCount > 0)
+      );
+
+      const pageWithUsers = await Promise.all(
+        filteredPage.map(async (s) => {
+          const m = await ctx.db
+            .query("machines")
+            .withIndex("by_machineId", (q) => q.eq("machineId", s.machineId))
+            .unique();
+          return { ...s, userEmail: m?.userEmail, authProvider: m?.authProvider };
+        })
+      );
+
       return {
         ...results,
-        page: results.page.filter(
-          (s) =>
-            (!args.onlyReturning || s.isReturning) &&
-            (!args.onlyWithErrors || s.errorCount > 0)
-        ),
+        page: pageWithUsers,
       };
     }
 
@@ -51,7 +62,22 @@ export const listSessions = query({
       q = q.filter((row) => row.gt(row.field("errorCount"), 0)) as typeof q;
     }
 
-    return await q.paginate(args.paginationOpts);
+    const results = await q.paginate(args.paginationOpts);
+
+    const pageWithUsers = await Promise.all(
+      results.page.map(async (s) => {
+        const m = await ctx.db
+          .query("machines")
+          .withIndex("by_machineId", (q) => q.eq("machineId", s.machineId))
+          .unique();
+        return { ...s, userEmail: m?.userEmail, authProvider: m?.authProvider };
+      })
+    );
+
+    return {
+      ...results,
+      page: pageWithUsers,
+    };
   },
 });
 
@@ -422,16 +448,32 @@ export const getPageViewsOverTime = query({
   },
 });
 
-/** Autocomplete / search machines by machineId prefix. */
+/** Autocomplete / search machines by machineId prefix or exact ip/email/name. */
 export const searchMachines = query({
   args: { prefix: v.string() },
   handler: async (ctx, { prefix }) => {
     if (!prefix || prefix.trim().length === 0) return [];
-    const results = await ctx.db
+    
+    const exactMatches = await ctx.db
+      .query("machines")
+      .filter((q) =>
+        q.or(
+          q.eq(q.field("ip"), prefix),
+          q.eq(q.field("userEmail"), prefix),
+          q.eq(q.field("userName"), prefix)
+        )
+      )
+      .take(20);
+
+    const idMatches = await ctx.db
       .query("machines")
       .withSearchIndex("search_machineId", (q) => q.search("machineId", prefix))
       .take(20);
-    return results.map((m) => ({
+
+    const combined = [...exactMatches, ...idMatches];
+    const unique = Array.from(new Map(combined.map((m) => [m.machineId, m])).values()).slice(0, 20);
+
+    return unique.map((m) => ({
       id: m.machineId,
       label: `${m.machineId.slice(0, 12)}…`,
       country: m.country ?? null,
@@ -441,6 +483,63 @@ export const searchMachines = query({
       userName: m.userName ?? null,
       authProvider: m.authProvider ?? null,
     }));
+  },
+});
+
+function shortenUA(ua: string): string {
+  if (ua.includes("Chrome/")) return "Chrome";
+  if (ua.includes("Firefox/")) return "Firefox";
+  if (ua.includes("Safari/") && !ua.includes("Chrome")) return "Safari";
+  if (ua.includes("Edg/")) return "Edge";
+  if (ua.includes("OPR/") || ua.includes("Opera")) return "Opera";
+  const match = ua.match(/(\S+)\/\d+/);
+  return match ? match[1] : ua.slice(0, 30);
+}
+
+export const getTopBrowsers = query({
+  args: { startDate: v.string(), endDate: v.string() },
+  handler: async (ctx, { startDate, endDate }) => {
+    const dayStart = new Date(`${startDate}T00:00:00.000Z`).getTime();
+    const dayEnd = new Date(`${endDate}T23:59:59.999Z`).getTime();
+    const machines = await ctx.db
+      .query("machines")
+      .withIndex("by_lastSeenAt", (q) => q.gte("lastSeenAt", dayStart))
+      .filter((q) => q.lt(q.field("lastSeenAt"), dayEnd))
+      .collect();
+
+    const counts = new Map<string, number>();
+    for (const m of machines) {
+      if (!m.userAgent) continue;
+      const ua = shortenUA(m.userAgent);
+      counts.set(ua, (counts.get(ua) ?? 0) + 1);
+    }
+    return Array.from(counts.entries())
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 10);
+  },
+});
+
+export const getTopPlatforms = query({
+  args: { startDate: v.string(), endDate: v.string() },
+  handler: async (ctx, { startDate, endDate }) => {
+    const dayStart = new Date(`${startDate}T00:00:00.000Z`).getTime();
+    const dayEnd = new Date(`${endDate}T23:59:59.999Z`).getTime();
+    const machines = await ctx.db
+      .query("machines")
+      .withIndex("by_lastSeenAt", (q) => q.gte("lastSeenAt", dayStart))
+      .filter((q) => q.lt(q.field("lastSeenAt"), dayEnd))
+      .collect();
+
+    const counts = new Map<string, number>();
+    for (const m of machines) {
+      if (!m.platform) continue;
+      counts.set(m.platform, (counts.get(m.platform) ?? 0) + 1);
+    }
+    return Array.from(counts.entries())
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 10);
   },
 });
 

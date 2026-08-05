@@ -25,6 +25,7 @@ export default defineSchema({
     .index("by_userId", ["userId"])
     .index("by_firstSeenDate", ["firstSeenDate"])
     .index("by_country", ["country"])
+    .index("by_lastSeenAt", ["lastSeenAt"])
     .searchIndex("search_machineId", { searchField: "machineId" }),
 
   sessions: defineTable({

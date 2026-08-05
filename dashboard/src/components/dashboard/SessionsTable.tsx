@@ -71,14 +71,14 @@ export function SessionsTable({ onSelectMachine }: { onSelectMachine?: (id: stri
               placeholder="Search by URL…"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              className="pl-8 h-8 text-xs w-56 bg-transparent"
+              className="pl-8 h-8 text-xs w-56 bg-card"
             />
           </div>
 
           {!isSearching && (
             <>
               <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortBy)}>
-                <SelectTrigger className="h-8 text-xs w-36 bg-transparent">
+                <SelectTrigger className="h-8 text-xs w-36 bg-card">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -93,7 +93,7 @@ export function SessionsTable({ onSelectMachine }: { onSelectMachine?: (id: stri
                 variant="outline"
                 size="sm"
                 onClick={() => setSortDir((d) => (d === "desc" ? "asc" : "desc"))}
-                className="h-8 text-xs gap-1 bg-transparent"
+                className="h-8 text-xs gap-1 bg-card"
               >
                 {sortDir === "desc" ? (
                   <ChevronDown className="h-3 w-3" />
@@ -109,7 +109,7 @@ export function SessionsTable({ onSelectMachine }: { onSelectMachine?: (id: stri
             variant={onlyReturning ? "secondary" : "outline"}
             size="sm"
             onClick={() => setOnlyReturning((v) => !v)}
-            className="h-8 text-xs bg-transparent"
+            className="h-8 text-xs bg-card"
           >
             Returning
           </Button>
@@ -117,7 +117,7 @@ export function SessionsTable({ onSelectMachine }: { onSelectMachine?: (id: stri
             variant={onlyWithErrors ? "secondary" : "outline"}
             size="sm"
             onClick={() => setOnlyWithErrors((v) => !v)}
-            className="h-8 text-xs bg-transparent"
+            className="h-8 text-xs bg-card"
           >
             Has errors
           </Button>
@@ -156,8 +156,13 @@ export function SessionsTable({ onSelectMachine }: { onSelectMachine?: (id: stri
                     <span className="text-foreground">{s.machineId.slice(0, 8)}…</span>
                   )}
                 </TableCell>
-                <TableCell className="text-xs text-muted-foreground max-w-[120px] truncate">
-                  {s.userId ? `${s.userId.slice(0, 8)}…` : "—"}
+                <TableCell className="text-xs text-muted-foreground max-w-[150px] truncate">
+                  {s.userEmail ? (
+                    <div className="flex flex-col">
+                      <span className="text-foreground truncate" title={s.userEmail}>{s.userEmail}</span>
+                      {s.authProvider && <span className="text-[10px] uppercase text-muted-foreground">{s.authProvider}</span>}
+                    </div>
+                  ) : s.userId ? `${s.userId.slice(0, 8)}…` : "—"}
                 </TableCell>
                 <TableCell className="text-xs text-muted-foreground max-w-[180px] truncate">
                   {s.entryUrl}
@@ -201,7 +206,7 @@ export function SessionsTable({ onSelectMachine }: { onSelectMachine?: (id: stri
               variant="outline"
               size="sm"
               onClick={() => loadMore(25)}
-              className="text-xs bg-transparent"
+              className="text-xs bg-card"
             >
               Load more
             </Button>

@@ -159,7 +159,7 @@ export function DistributionChart({ startDate, endDate }: { startDate: string; e
               </Pie>
               <Tooltip
                 contentStyle={TOOLTIP_STYLE}
-                formatter={(value: number) => [value.toLocaleString(), ""]}
+                formatter={(value) => [Number(value ?? 0).toLocaleString(), ""]}
               />
               <Legend
                 iconType="circle"

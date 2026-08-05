@@ -4,6 +4,17 @@ import { internal } from "./_generated/api";
 
 const WISP_SECRET = process.env.WISP_SECRET;
 
+type IngestEvent = {
+  sessionId: string;
+  machineId: string;
+  userId?: string;
+  type: "pageview" | "interaction" | "error" | "custom";
+  name: string;
+  payload?: unknown;
+  url: string;
+  timestamp: number;
+};
+
 function isAuthorized(request: Request): boolean {
   if (!WISP_SECRET) return true;
   return request.headers.get("x-wisp-token") === WISP_SECRET;
@@ -19,7 +30,7 @@ http.route({
       return new Response("Unauthorized", { status: 401 });
     }
 
-    const body = await request.json() as { events: unknown[] };
+    const body = await request.json() as { events: IngestEvent[] };
     const geo = await resolveGeo(request);
 
     await ctx.runMutation(internal.events.recordBatchWithGeo, {

@@ -77,7 +77,12 @@ export function PageVisitors({
                   </TableCell>
                   <TableCell className="text-xs text-foreground">{v.visitCount}</TableCell>
                   <TableCell className="text-xs text-muted-foreground max-w-[160px] truncate">
-                    {v.userEmail ?? v.userName ?? v.authProvider ?? "—"}
+                    {v.userEmail ? (
+                      <div className="flex flex-col">
+                        <span className="text-foreground truncate" title={v.userEmail}>{v.userEmail}</span>
+                        {v.authProvider && <span className="text-[10px] uppercase text-muted-foreground">{v.authProvider}</span>}
+                      </div>
+                    ) : v.userName ?? v.authProvider ?? "—"}
                   </TableCell>
                   <TableCell className="text-xs text-muted-foreground">{v.country ?? "—"}</TableCell>
                   <TableCell className="text-xs text-muted-foreground">{v.platform ?? "—"}</TableCell>

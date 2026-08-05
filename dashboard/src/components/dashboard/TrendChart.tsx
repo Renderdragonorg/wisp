@@ -195,7 +195,7 @@ export function TrendChart({ startDate, endDate }: { startDate: string; endDate:
         {CHART_TYPES.map((t) => (
           <Button
             key={t}
-            variant={chartType === t ? "secondary" : "ghost"}
+            variant={chartType === t ? "secondary" : "outline"}
             size="sm"
             onClick={() => setChartType(t)}
             className="h-7 text-xs capitalize px-2.5"

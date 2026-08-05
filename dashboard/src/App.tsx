@@ -10,6 +10,7 @@ import { TopPagesChart } from "./components/dashboard/TopPagesChart";
 import { PageVisitors } from "./components/dashboard/PageVisitors";
 import { SessionsTable } from "./components/dashboard/SessionsTable";
 import { MachineView } from "./components/dashboard/MachineView";
+import { DeviceCharts } from "./components/dashboard/DeviceCharts";
 import { Input } from "./components/ui/input";
 import {
   Select,
@@ -127,7 +128,7 @@ export default function DashboardPage() {
           <div className="px-2.5">
             <p className="text-[10px] text-muted-foreground">Range</p>
             <Select value={String(rangeDays)} onValueChange={(v) => setRangeDays(Number(v))}>
-              <SelectTrigger className="mt-1.5 h-8 text-xs bg-transparent">
+              <SelectTrigger className="mt-1.5 h-8 text-xs bg-card">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -163,7 +164,7 @@ export default function DashboardPage() {
               onChange={(e) => { setSearchInput(e.target.value); setShowSuggestions(true); }}
               onFocus={() => setShowSuggestions(true)}
               onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-              className="pl-8 h-8 text-xs w-48 bg-transparent"
+              className="pl-8 h-8 text-xs w-48 bg-card"
             />
             {showSuggestions && suggestions && suggestions.length > 0 && (
               <div className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-md z-50 shadow-md overflow-hidden max-h-48 overflow-y-auto">
@@ -177,7 +178,7 @@ export default function DashboardPage() {
                     <div className="text-muted-foreground mt-0.5">
                       {s.platform ?? "—"} · {s.country ?? "—"} · {s.lastSeenAt ? new Date(s.lastSeenAt).toLocaleDateString() : "—"}
                       {s.userEmail && ` · ${s.userEmail}`}
-                      {s.userName && ` · ${s.userName}`}
+                      {s.authProvider && ` (${s.authProvider})`}
                     </div>
                   </button>
                 ))}
@@ -199,6 +200,11 @@ export default function DashboardPage() {
             <section>
               <SectionHeader title="Distribution" />
               <DistributionChart startDate={startDate} endDate={endDate} />
+            </section>
+
+            <section>
+              <SectionHeader title="Devices & Browsers" />
+              <DeviceCharts startDate={startDate} endDate={endDate} />
             </section>
 
             <section>
