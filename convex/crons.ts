@@ -6,8 +6,9 @@ const crons = cronJobs();
 // Sweep for sessions that have gone quiet for 30+ min and mark them closed.
 crons.interval("close stale sessions", { minutes: 10 }, internal.stats.closeStaleSessions, {});
 
-// Roll up yesterday's activity once a day. Run at 00:15 UTC so the full
-// previous day's sessions have had a chance to close first.
-crons.cron("compute daily stats", "15 0 * * *", internal.stats.computeDailyStats, {});
+// Roll up activity into the aggregate tables. Runs every 15 minutes so the
+// dashboard's "today" numbers stay live and yesterday stays finalized —
+// computeDailyStats rolls both today and yesterday when no date is passed.
+crons.interval("compute daily stats", { minutes: 15 }, internal.stats.computeDailyStats, {});
 
 export default crons;

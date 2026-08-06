@@ -79,6 +79,29 @@ export default defineSchema({
     totalSessions: v.number(),
     totalErrors: v.number(),
     totalEvents: v.number(),
+    totalPageViews: v.optional(v.number()),
     avgSessionDurationMs: v.number(),
   }).index("by_date", ["date"]),
+
+  // Per-day, per-URL pageview counts — rolled up by computeDailyStats so
+  // top-pages queries don't have to scan the raw events table (which can
+  // exceed the 32k docs-per-transaction limit).
+  dailyPages: defineTable({
+    date: v.string(), // "YYYY-MM-DD"
+    url: v.string(),
+    viewCount: v.number(),
+  }).index("by_date", ["date"]),
+
+  // Per-day, per-URL, per-machine pageview counts — powers the "Page
+  // Visitors" drill-down without scanning raw events.
+  dailyPageVisitors: defineTable({
+    date: v.string(), // "YYYY-MM-DD"
+    url: v.string(),
+    machineId: v.string(),
+    viewCount: v.number(),
+    firstVisitedAt: v.number(),
+    lastVisitedAt: v.number(),
+  })
+    .index("by_date_url", ["date", "url"])
+    .index("by_url_date", ["url", "date"]),
 });

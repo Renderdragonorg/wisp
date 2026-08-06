@@ -121,8 +121,6 @@ export const getOverview = query({
       .withIndex("by_date", (q) => q.gte("date", startDate).lte("date", endDate))
       .collect();
 
-    const totalPageViews = await countPageViews(ctx, dayStart, dayEnd);
-
     if (daily.length > 0) {
       const totals = daily.reduce(
         (acc, d) => ({
@@ -131,8 +129,9 @@ export const getOverview = query({
           totalSessions: acc.totalSessions + d.totalSessions,
           totalErrors: acc.totalErrors + d.totalErrors,
           totalEvents: acc.totalEvents + d.totalEvents,
+          totalPageViews: acc.totalPageViews + (d.totalPageViews ?? 0),
         }),
-        { newUsers: 0, returningUsers: 0, totalSessions: 0, totalErrors: 0, totalEvents: 0 }
+        { newUsers: 0, returningUsers: 0, totalSessions: 0, totalErrors: 0, totalEvents: 0, totalPageViews: 0 }
       );
 
       const avgDuration =
@@ -141,7 +140,7 @@ export const getOverview = query({
           : 0;
 
       return {
-        totals: { ...totals, totalPageViews },
+        totals,
         avgSessionDurationMs: avgDuration,
         series: daily.sort((a, b) => a.date.localeCompare(b.date)),
       };
@@ -175,7 +174,7 @@ export const getOverview = query({
         totalSessions: sessionsInRange.length,
         totalErrors,
         totalEvents,
-        totalPageViews,
+        totalPageViews: await countPageViews(ctx, dayStart, dayEnd),
       },
       avgSessionDurationMs: Math.round(avgDuration),
       series: [
@@ -342,60 +341,56 @@ async function countPageViews(ctx: QueryCtx, dayStart: number, dayEnd: number): 
   return pvs.filter((e) => e.timestamp < dayEnd).length;
 }
 
-/** Most viewed pages in a date range. */
+/** Most viewed pages in a date range — reads the dailyPages rollup. */
 export const getTopPages = query({
   args: { startDate: v.string(), endDate: v.string(), limit: v.optional(v.number()) },
   handler: async (ctx, { startDate, endDate, limit }) => {
-    const dayStart = new Date(`${startDate}T00:00:00.000Z`).getTime();
-    const dayEnd = new Date(`${endDate}T23:59:59.999Z`).getTime();
-
-    const pageviews = await ctx.db
-      .query("events")
-      .withIndex("by_type_time", (q) => q.eq("type", "pageview").gte("timestamp", dayStart))
+    const pageRows = await ctx.db
+      .query("dailyPages")
+      .withIndex("by_date", (q) => q.gte("date", startDate).lte("date", endDate))
       .collect();
 
-    const inRange = pageviews.filter((e) => e.timestamp < dayEnd);
-
-    const pageMap = new Map<string, { viewCount: number; machines: Set<string> }>();
-    for (const e of inRange) {
-      const entry = pageMap.get(e.url) ?? { viewCount: 0, machines: new Set<string>() };
-      entry.viewCount++;
-      entry.machines.add(e.machineId);
-      pageMap.set(e.url, entry);
+    const pageMap = new Map<string, number>();
+    for (const row of pageRows) {
+      pageMap.set(row.url, (pageMap.get(row.url) ?? 0) + row.viewCount);
     }
 
     return Array.from(pageMap.entries())
-      .map(([url, { viewCount, machines }]) => ({ url, viewCount, uniqueMachines: machines.size }))
+      .map(([url, viewCount]) => ({ url, viewCount }))
       .sort((a, b) => b.viewCount - a.viewCount)
       .slice(0, limit ?? 20);
   },
 });
 
-/** Machines that visited a specific page. */
+/** Machines that visited a specific page — reads the dailyPageVisitors rollup. */
 export const getPageVisitors = query({
   args: { url: v.string(), startDate: v.string(), endDate: v.string() },
   handler: async (ctx, { url, startDate, endDate }) => {
-    const dayStart = new Date(`${startDate}T00:00:00.000Z`).getTime();
-    const dayEnd = new Date(`${endDate}T23:59:59.999Z`).getTime();
-
-    const pageviews = await ctx.db
-      .query("events")
-      .withIndex("by_type_time", (q) => q.eq("type", "pageview").gte("timestamp", dayStart))
+    const visitorRows = await ctx.db
+      .query("dailyPageVisitors")
+      .withIndex("by_url_date", (q) =>
+        q.eq("url", url).gte("date", startDate).lte("date", endDate)
+      )
       .collect();
 
-    const inRange = pageviews.filter((e) => e.timestamp < dayEnd && e.url === url);
-
     const machineMap = new Map<string, { visitCount: number; firstVisitedAt: number; lastVisitedAt: number }>();
-    for (const e of inRange) {
-      const entry = machineMap.get(e.machineId) ?? { visitCount: 0, firstVisitedAt: e.timestamp, lastVisitedAt: e.timestamp };
-      entry.visitCount++;
-      entry.firstVisitedAt = Math.min(entry.firstVisitedAt, e.timestamp);
-      entry.lastVisitedAt = Math.max(entry.lastVisitedAt, e.timestamp);
-      machineMap.set(e.machineId, entry);
+    for (const row of visitorRows) {
+      const entry = machineMap.get(row.machineId) ?? { visitCount: 0, firstVisitedAt: row.firstVisitedAt, lastVisitedAt: row.lastVisitedAt };
+      entry.visitCount += row.viewCount;
+      entry.firstVisitedAt = Math.min(entry.firstVisitedAt, row.firstVisitedAt);
+      entry.lastVisitedAt = Math.max(entry.lastVisitedAt, row.lastVisitedAt);
+      machineMap.set(row.machineId, entry);
     }
 
+    // Cap to the top visitors by count: each machine needs an index-range
+    // read to join details, and a single function execution allows at most
+    // 4096 index range reads.
+    const topVisitors = Array.from(machineMap.entries())
+      .sort((a, b) => b[1].visitCount - a[1].visitCount)
+      .slice(0, 500);
+
     const machines = await Promise.all(
-      Array.from(machineMap.entries()).map(async ([machineId, stats]) => {
+      topVisitors.map(async ([machineId, stats]) => {
         const machine = await ctx.db
           .query("machines")
           .withIndex("by_machineId", (q) => q.eq("machineId", machineId))
