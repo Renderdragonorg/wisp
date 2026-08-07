@@ -1,6 +1,7 @@
 import { httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
 import { internal } from "./_generated/api";
+import { auth } from "./auth";
 
 const WISP_SECRET = process.env.WISP_SECRET;
 
@@ -21,6 +22,8 @@ function isAuthorized(request: Request): boolean {
 }
 
 const http = httpRouter();
+
+auth.addHttpRoutes(http);
 
 http.route({
   path: "/ingest",

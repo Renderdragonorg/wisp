@@ -3,11 +3,14 @@ import { createRoot } from "react-dom/client";
 import { ConvexClientProvider } from "./ConvexClientProvider";
 import "./index.css";
 import App from "./App";
+import { AuthGate } from "./components/AuthGate";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ConvexClientProvider>
-      <App />
+      <AuthGate>
+        <App />
+      </AuthGate>
     </ConvexClientProvider>
   </StrictMode>
 );

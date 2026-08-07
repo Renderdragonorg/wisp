@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { useQuery } from "convex/react";
+import { useAuthActions } from "@convex-dev/auth/react";
 import { api } from "@/convex/_generated/api";
 import { StatCards } from "./components/dashboard/StatCards";
 import { TrendChart } from "./components/dashboard/TrendChart";
@@ -48,6 +49,7 @@ const NAV_ITEMS: { id: NavSection; label: string; icon: React.ReactNode }[] = [
 ];
 
 export default function DashboardPage() {
+  const { signOut } = useAuthActions();
   const [rangeDays, setRangeDays] = useState(30);
   const [selectedError, setSelectedError] = useState<string | null>(null);
   const [selectedPage, setSelectedPage] = useState<string | null>(null);
@@ -185,9 +187,18 @@ export default function DashboardPage() {
               </div>
             )}
           </div>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => void signOut()}
+            className="text-xs text-muted-foreground shrink-0 ml-2"
+          >
+            Sign out
+          </Button>
         </div>
 
-        {/* ── Overview: all charts ── */}
+      {/* ── Overview: all charts ── */}
         {activeSection === "overview" && (
           <div className="space-y-8">
             <StatCards startDate={startDate} endDate={endDate} />
