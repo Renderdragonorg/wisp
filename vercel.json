@@ -1,0 +1,6 @@
+{
+  "framework": "vite",
+  "buildCommand": "cd dashboard && npm run build",
+  "installCommand": "npm install && cd dashboard && npm install",
+  "outputDirectory": "dashboard/dist"
+}

@@ -1,0 +1,31 @@
+name: Deploy dashboard to Vercel
+
+on:
+  push:
+    branches: [master, main]
+    paths:
+      - "dashboard/**"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: Write Convex env
+        run: echo "VITE_CONVEX_URL=${{ secrets.VITE_CONVEX_URL }}" > dashboard/.env.production.local
+
+      - name: Deploy to Vercel
+        run: vercel deploy --prod --yes --token "${{ secrets.VERCEL_TOKEN }}"
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
