@@ -43,6 +43,7 @@ bindSupabase(supabase);
 | [Backend](https://github.com/Renderdragonorg/wisp/blob/master/docs/backend.md) | Schema, mutations, queries, HTTP Action, crons |
 | [Dashboard](https://github.com/Renderdragonorg/wisp/blob/master/docs/dashboard.md) | Charts, sessions table, error viewer, machine view |
 | [Deployment](https://github.com/Renderdragonorg/wisp/blob/master/docs/deployment.md) | Production Convex deploy, building the SDK, dashboard |
+| [Self-hosted](https://github.com/Renderdragonorg/wisp/blob/master/docs/self-hosted.md) | Self-hosted Convex, Cloudflare Tunnel, migration, and cutover |
 
 ## License
 
