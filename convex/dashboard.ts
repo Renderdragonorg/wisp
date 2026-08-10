@@ -4,6 +4,7 @@ import { v } from "convex/values";
 import { paginationOptsValidator } from "convex/server";
 
 const dateKey = (ms: number) => new Date(ms).toISOString().slice(0, 10);
+const DEVICE_CHART_SAMPLE_SIZE = 1000;
 
 export const listSessions = query({
   args: {
@@ -499,7 +500,8 @@ export const getTopBrowsers = query({
     const machines = await ctx.db
       .query("machines")
       .withIndex("by_lastSeenAt", (q) => q.gte("lastSeenAt", dayStart).lt("lastSeenAt", dayEnd))
-      .collect();
+      .order("desc")
+      .take(DEVICE_CHART_SAMPLE_SIZE);
 
     const counts = new Map<string, number>();
     for (const m of machines) {
@@ -522,7 +524,8 @@ export const getTopPlatforms = query({
     const machines = await ctx.db
       .query("machines")
       .withIndex("by_lastSeenAt", (q) => q.gte("lastSeenAt", dayStart).lt("lastSeenAt", dayEnd))
-      .collect();
+      .order("desc")
+      .take(DEVICE_CHART_SAMPLE_SIZE);
 
     const counts = new Map<string, number>();
     for (const m of machines) {
