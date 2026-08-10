@@ -2,7 +2,6 @@ import { action, query, type QueryCtx } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { v } from "convex/values";
 import { paginationOptsValidator } from "convex/server";
-import { requireAdmin, requireAdminAction } from "./authz";
 
 const dateKey = (ms: number) => new Date(ms).toISOString().slice(0, 10);
 
@@ -18,7 +17,6 @@ export const listSessions = query({
     onlyWithErrors: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    await requireAdmin(ctx);
     const sortDir = args.sortDir ?? "desc";
 
     if (args.search && args.search.trim().length > 0) {
@@ -92,7 +90,6 @@ export const listEvents = query({
     ),
   },
   handler: async (ctx, args) => {
-    await requireAdmin(ctx);
     if (args.search && args.search.trim().length > 0) {
       let sq = ctx.db.query("events").withSearchIndex("search_name", (q) => {
         const base = q.search("name", args.search!);
@@ -116,7 +113,6 @@ export const listEvents = query({
 export const getOverview = query({
   args: { startDate: v.string(), endDate: v.string() },
   handler: async (ctx, { startDate, endDate }) => {
-    await requireAdmin(ctx);
     const dayStart = new Date(`${startDate}T00:00:00.000Z`).getTime();
     const dayEnd = new Date(`${endDate}T23:59:59.999Z`).getTime();
 
@@ -199,7 +195,6 @@ export const getOverview = query({
 export const getErrorBreakdown = query({
   args: { since: v.number() },
   handler: async (ctx, { since }) => {
-    await requireAdmin(ctx);
     const errors = await ctx.db
       .query("events")
       .withIndex("by_type_time", (q) => q.eq("type", "error").gte("timestamp", since))
@@ -219,7 +214,6 @@ export const getErrorBreakdown = query({
 export const getErrorDetails = query({
   args: { errorName: v.string(), since: v.number(), limit: v.optional(v.number()) },
   handler: async (ctx, { errorName, since, limit }) => {
-    await requireAdmin(ctx);
     const errors = await ctx.db
       .query("events")
       .withIndex("by_type_time", (q) => q.eq("type", "error").gte("timestamp", since))
@@ -247,7 +241,6 @@ export const getErrorDetails = query({
 export const getMachineStats = query({
   args: { machineId: v.string() },
   handler: async (ctx, { machineId }) => {
-    await requireAdmin(ctx);
     const machine = await ctx.db
       .query("machines")
       .withIndex("by_machineId", (q) => q.eq("machineId", machineId))
@@ -352,7 +345,6 @@ async function countPageViews(ctx: QueryCtx, dayStart: number, dayEnd: number): 
 export const getTopPages = query({
   args: { startDate: v.string(), endDate: v.string(), limit: v.optional(v.number()) },
   handler: async (ctx, { startDate, endDate, limit }) => {
-    await requireAdmin(ctx);
     const pageRows = await ctx.db
       .query("dailyPages")
       .withIndex("by_date", (q) => q.gte("date", startDate).lte("date", endDate))
@@ -374,7 +366,6 @@ export const getTopPages = query({
 export const getPageVisitors = query({
   args: { url: v.string(), startDate: v.string(), endDate: v.string() },
   handler: async (ctx, { url, startDate, endDate }) => {
-    await requireAdmin(ctx);
     const visitorRows = await ctx.db
       .query("dailyPageVisitors")
       .withIndex("by_url_date", (q) =>
@@ -427,7 +418,6 @@ export const getPageVisitors = query({
 export const getPageViewsOverTime = query({
   args: { startDate: v.string(), endDate: v.string() },
   handler: async (ctx, { startDate, endDate }) => {
-    await requireAdmin(ctx);
     const dayStart = new Date(`${startDate}T00:00:00.000Z`).getTime();
     const dayEnd = new Date(`${endDate}T23:59:59.999Z`).getTime();
 
@@ -457,7 +447,6 @@ export const getPageViewsOverTime = query({
 export const searchMachines = query({
   args: { prefix: v.string() },
   handler: async (ctx, { prefix }) => {
-    await requireAdmin(ctx);
     if (!prefix || prefix.trim().length === 0) return [];
     
     const exactMatches = await ctx.db
@@ -505,7 +494,6 @@ function shortenUA(ua: string): string {
 export const getTopBrowsers = query({
   args: { startDate: v.string(), endDate: v.string() },
   handler: async (ctx, { startDate, endDate }) => {
-    await requireAdmin(ctx);
     const dayStart = new Date(`${startDate}T00:00:00.000Z`).getTime();
     const dayEnd = new Date(`${endDate}T23:59:59.999Z`).getTime();
     const machines = await ctx.db
@@ -530,7 +518,6 @@ export const getTopBrowsers = query({
 export const getTopPlatforms = query({
   args: { startDate: v.string(), endDate: v.string() },
   handler: async (ctx, { startDate, endDate }) => {
-    await requireAdmin(ctx);
     const dayStart = new Date(`${startDate}T00:00:00.000Z`).getTime();
     const dayEnd = new Date(`${endDate}T23:59:59.999Z`).getTime();
     const machines = await ctx.db
@@ -555,7 +542,6 @@ export const getTopPlatforms = query({
 export const recomputeStats = action({
   args: {},
   handler: async (ctx) => {
-    await requireAdminAction(ctx);
     await ctx.runMutation(internal.stats.closeStaleSessions, {});
     await ctx.runMutation(internal.stats.computeDailyStats, {});
     await ctx.runMutation(internal.stats.computeDailyStats, {

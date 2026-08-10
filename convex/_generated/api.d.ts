@@ -8,11 +8,8 @@
  * @module
  */
 
-import type * as auth from "../auth.js";
-import type * as authz from "../authz.js";
 import type * as crons from "../crons.js";
 import type * as dashboard from "../dashboard.js";
-import type * as dashboardAuth from "../dashboardAuth.js";
 import type * as events from "../events.js";
 import type * as http from "../http.js";
 import type * as reset from "../reset.js";
@@ -25,11 +22,8 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
-  auth: typeof auth;
-  authz: typeof authz;
   crons: typeof crons;
   dashboard: typeof dashboard;
-  dashboardAuth: typeof dashboardAuth;
   events: typeof events;
   http: typeof http;
   reset: typeof reset;

@@ -103,26 +103,6 @@ An authorized empty event batch should return `204`. A `401` means the route
 works but the token is missing or incorrect. A `404` usually means `/ingest`
 was sent to port `3210` instead of port `3211`.
 
-### Cross-origin dashboard access
-
-If the custom dashboard is hosted at a different origin from Convex, the
-browser must be allowed to read the Convex discovery response. For example,
-when the dashboard is hosted at `https://wisp.renderdragon.org`, add a
-Cloudflare **Transform Rule -> Modify Response Header** for
-`convexapi.codersoft.xyz` with these response headers:
-
-```text
-Access-Control-Allow-Origin: https://wisp.renderdragon.org
-Access-Control-Allow-Credentials: true
-Access-Control-Allow-Methods: GET, POST, OPTIONS
-Access-Control-Allow-Headers: Content-Type, Authorization
-Vary: Origin
-```
-
-Apply the rule to `/.well-known/*` at minimum. Applying it to all responses
-from `convexapi.codersoft.xyz` also covers the Convex Auth requests. Do not use
-`Access-Control-Allow-Origin: *` together with credentials.
-
 ## Deploying Convex code
 
 Use the latest Convex CLI for self-hosted operations:
@@ -170,36 +150,15 @@ The export does not transfer deployment environment variables, OAuth secrets,
 JWT signing keys, Cloudflare configuration, or frontend hosting variables.
 Copy those values separately through the self-hosted deployment settings.
 
-## Dashboard authentication
+## Dashboard access
 
-The custom Wisp dashboard uses Convex Auth's credentials provider. It does not
-use GitHub OAuth. Configure the dashboard name and key as Convex environment
-variables:
+The custom Wisp dashboard has no login gate. Dashboard queries are public, so
+protect the dashboard hostname with Cloudflare Access, a private network, or
+another external access-control layer before exposing it publicly.
 
-```text
-DASHBOARD_NAME
-DASHBOARD_KEY
-JWT_PRIVATE_KEY
-JWKS
-SITE_URL
-```
-
-For example, set them through the Convex CLI without putting them in frontend
-environment variables:
-
-```bash
-npx convex env set DASHBOARD_NAME "your-dashboard-name"
-npx convex env set DASHBOARD_KEY
-```
-
-The second command reads the key interactively. The browser sends the entered
-credentials over HTTPS to Convex Auth, while the configured values remain
-server-side. The dashboard receives a normal Convex Auth session after a
-successful login, so protected dashboard queries remain protected.
-
-Keep the JWT private key and JWKS as a matching pair. Rotating them invalidates
-existing Convex Auth sessions and requires users to sign in again. Set `SITE_URL`
-to the URL where the custom dashboard is running.
+The legacy Convex Auth tables remain in the schema to avoid deleting migrated
+auth data, but the dashboard no longer uses GitHub, credentials, JWT, or Convex
+Auth sessions.
 
 ## Cutover checklist
 
@@ -211,7 +170,7 @@ to the URL where the custom dashboard is running.
 - Verify `/ingest` returns `204` with the correct Wisp token.
 - Set frontend and dashboard `VITE_CONVEX_URL` to the self-hosted URL.
 - Redeploy the frontend and dashboard.
-- Test dashboard sign-in and protected queries.
+- Test dashboard queries and confirm the external access-control layer.
 - Test a real Wisp event and confirm it appears in the self-hosted dashboard.
 - Keep the hosted deployment available until the cutover is verified.
 
