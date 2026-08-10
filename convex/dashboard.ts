@@ -498,8 +498,7 @@ export const getTopBrowsers = query({
     const dayEnd = new Date(`${endDate}T23:59:59.999Z`).getTime();
     const machines = await ctx.db
       .query("machines")
-      .withIndex("by_lastSeenAt", (q) => q.gte("lastSeenAt", dayStart))
-      .filter((q) => q.lt(q.field("lastSeenAt"), dayEnd))
+      .withIndex("by_lastSeenAt", (q) => q.gte("lastSeenAt", dayStart).lt("lastSeenAt", dayEnd))
       .collect();
 
     const counts = new Map<string, number>();
@@ -522,8 +521,7 @@ export const getTopPlatforms = query({
     const dayEnd = new Date(`${endDate}T23:59:59.999Z`).getTime();
     const machines = await ctx.db
       .query("machines")
-      .withIndex("by_lastSeenAt", (q) => q.gte("lastSeenAt", dayStart))
-      .filter((q) => q.lt(q.field("lastSeenAt"), dayEnd))
+      .withIndex("by_lastSeenAt", (q) => q.gte("lastSeenAt", dayStart).lt("lastSeenAt", dayEnd))
       .collect();
 
     const counts = new Map<string, number>();
