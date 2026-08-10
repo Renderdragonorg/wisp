@@ -2,7 +2,7 @@ import { action, query, type QueryCtx } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { v } from "convex/values";
 import { paginationOptsValidator } from "convex/server";
-import { requireAdmin } from "./authz";
+import { requireAdmin, requireAdminAction } from "./authz";
 
 const dateKey = (ms: number) => new Date(ms).toISOString().slice(0, 10);
 
@@ -555,7 +555,7 @@ export const getTopPlatforms = query({
 export const recomputeStats = action({
   args: {},
   handler: async (ctx) => {
-    await requireAdmin(ctx);
+    await requireAdminAction(ctx);
     await ctx.runMutation(internal.stats.closeStaleSessions, {});
     await ctx.runMutation(internal.stats.computeDailyStats, {});
     await ctx.runMutation(internal.stats.computeDailyStats, {

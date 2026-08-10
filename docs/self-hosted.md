@@ -147,37 +147,36 @@ The export does not transfer deployment environment variables, OAuth secrets,
 JWT signing keys, Cloudflare configuration, or frontend hosting variables.
 Copy those values separately through the self-hosted deployment settings.
 
-## Authentication
+## Dashboard authentication
 
-This project uses `@convex-dev/auth` with GitHub. The self-hosted deployment
-must have the same provider configuration and these values configured as
-appropriate for the environment:
+The custom Wisp dashboard uses Convex Auth's credentials provider. It does not
+use GitHub OAuth. Configure the dashboard name and key as Convex environment
+variables:
 
 ```text
-AUTH_GITHUB_ID
-AUTH_GITHUB_SECRET
+DASHBOARD_NAME
+DASHBOARD_KEY
 JWT_PRIVATE_KEY
 JWKS
 SITE_URL
 ```
 
-Keep the JWT private key and JWKS as a matching pair. Rotating them invalidates
-existing Convex Auth sessions and requires users to sign in again.
+For example, set them through the Convex CLI without putting them in frontend
+environment variables:
 
-The GitHub OAuth application must allow the callback URL used by the deployed
-dashboard and the self-hosted Convex Auth routes. After changing the public
-host, test sign-in, sign-out, and a protected dashboard query.
-
-For this deployment, set the GitHub OAuth App's **Authorization callback URL**
-to this exact value:
-
-```text
-https://convexapi.codersoft.xyz/api/auth/callback/github
+```bash
+npx convex env set DASHBOARD_NAME "your-dashboard-name"
+npx convex env set DASHBOARD_KEY
 ```
 
-Do not add a trailing slash. Set `SITE_URL` to the URL where the dashboard is
-running, such as `http://localhost:5173` during local development or the
-deployed dashboard URL in production.
+The second command reads the key interactively. The browser sends the entered
+credentials over HTTPS to Convex Auth, while the configured values remain
+server-side. The dashboard receives a normal Convex Auth session after a
+successful login, so protected dashboard queries remain protected.
+
+Keep the JWT private key and JWKS as a matching pair. Rotating them invalidates
+existing Convex Auth sessions and requires users to sign in again. Set `SITE_URL`
+to the URL where the custom dashboard is running.
 
 ## Cutover checklist
 
