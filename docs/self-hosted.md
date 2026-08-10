@@ -19,8 +19,8 @@ publishes them through:
 https://convexapi.codersoft.xyz
 ```
 
-Normal Convex traffic is routed to port `3210`. `/ingest` and `/api/auth/*`
-are routed to port `3211`.
+Normal Convex traffic is routed to port `3210`. `/ingest`, `/api/auth/*`, and
+`/.well-known/*` are routed to port `3211`.
 
 ## Frontend configuration
 
@@ -75,6 +75,9 @@ ingress:
     service: http://127.0.0.1:3211
   - hostname: convexapi.codersoft.xyz
     path: ^/api/auth(/.*)?$
+    service: http://127.0.0.1:3211
+  - hostname: convexapi.codersoft.xyz
+    path: ^/\.well-known/.*$
     service: http://127.0.0.1:3211
   - hostname: convexapi.codersoft.xyz
     service: http://127.0.0.1:3210
