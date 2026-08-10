@@ -103,6 +103,26 @@ An authorized empty event batch should return `204`. A `401` means the route
 works but the token is missing or incorrect. A `404` usually means `/ingest`
 was sent to port `3210` instead of port `3211`.
 
+### Cross-origin dashboard access
+
+If the custom dashboard is hosted at a different origin from Convex, the
+browser must be allowed to read the Convex discovery response. For example,
+when the dashboard is hosted at `https://wisp.renderdragon.org`, add a
+Cloudflare **Transform Rule -> Modify Response Header** for
+`convexapi.codersoft.xyz` with these response headers:
+
+```text
+Access-Control-Allow-Origin: https://wisp.renderdragon.org
+Access-Control-Allow-Credentials: true
+Access-Control-Allow-Methods: GET, POST, OPTIONS
+Access-Control-Allow-Headers: Content-Type, Authorization
+Vary: Origin
+```
+
+Apply the rule to `/.well-known/*` at minimum. Applying it to all responses
+from `convexapi.codersoft.xyz` also covers the Convex Auth requests. Do not use
+`Access-Control-Allow-Origin: *` together with credentials.
+
 ## Deploying Convex code
 
 Use the latest Convex CLI for self-hosted operations:
